@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oh! La Fabbrica dei Suoni e dei Ritmi - Hervé Tullet</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for playful Tullet-style typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Mali:wght@600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons for touch-friendly iconography -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'tullet-blue': '#0055ff',
+                        'tullet-red': '#ff2a2a',
+                        'tullet-yellow': '#ffcc00',
+                        'tullet-dark': '#1c1c1e',
+                        'tullet-bg': '#faf9f5'
+                    },
+                    fontFamily: {
+                        'sans': ['Fredoka', 'sans-serif'],
+                        'hand': ['Mali', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #faf9f5;
+            background-image: radial-gradient(#e5e3db 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Hand-drawn Tullet style borders */
+        .tullet-card {
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            box-shadow: 4px 6px 0px #1c1c1e;
+        }
+
+        .tullet-btn {
+            border-radius: 255px 25px 225px 25px/25px 225px 25px 255px;
+            box-shadow: 3px 4px 0px #1c1c1e;
+            transition: all 0.15s ease;
+        }
+
+        .tullet-btn:active {
+            transform: translate(2px, 3px);
+            box-shadow: 1px 1px 0px #1c1c1e;
+        }
+
+        /* Organic Dot Shapes */
+        .dot-organic {
+            border-radius: 50% 48% 52% 49% / 49% 52% 48% 51%;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Active dot bounce animation */
+        @keyframes tullet-bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.35) translateY(-8px); }
+        }
+
+        .dot-playing {
+            animation: tullet-bounce 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Pulsing recording aura */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 42, 42, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(255, 42, 42, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 42, 42, 0); }
+        }
+
+        .recording-active {
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        /* High-visibility active step highlighting during sequence playback */
+        .step-active-glowing {
+            transform: scale(1.25) !important;
+            z-index: 20 !important;
+            background-color: #fef08a !important; /* Giallo acceso Tullet */
+            border-color: #ff2a2a !important;
+            box-shadow: 0 0 0 6px #ff2a2a, 0 0 25px rgba(255, 42, 42, 0.8) !important;
+            transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease-in-out;
+        }
+
+        .step-active-glowing .dot-organic {
+            filter: drop-shadow(0px 0px 10px rgba(0, 85, 255, 0.8));
+        }
+
+        /* Custom Scrollbar for track */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 12px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #eae8e1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #0055ff;
+            border-radius: 10px;
+            border: 2px solid #eae8e1;
+        }
+    </style>
+</head>
+<body class="text-tullet-dark min-h-screen flex flex-col font-sans overflow-x-hidden">
+
+    <!-- Audio Unlock Overlay -->
+    <div id="audio-unlock-overlay" class="fixed inset-0 z-50 bg-tullet-dark/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white p-8 max-w-md w-full text-center border-4 border-tullet-dark tullet-card">
+            <div class="flex justify-center -space-x-3 mb-4">
+                <div class="w-14 h-14 rounded-full bg-tullet-blue border-3 border-tullet-dark flex items-center justify-center text-white font-bold text-lg shadow">OH!</div>
+                <div class="w-14 h-14 rounded-full bg-tullet-red border-3 border-tullet-dark flex items-center justify-center text-white font-bold text-lg shadow">AH!</div>
+                <div class="w-14 h-14 rounded-full bg-tullet-yellow border-3 border-tullet-dark flex items-center justify-center text-tullet-dark font-bold text-base shadow">UAU!</div>
+            </div>
+            <h2 class="text-3xl font-black mb-3">Benvenuto nel Libro dei Suoni!</h2>
+            <p class="text-gray-700 mb-6 text-base font-medium">Tocca il pulsante per attivare l'audio ed esplorare i ritmi di Hervé Tullet.</p>
+            <button id="btn-unlock-audio" class="w-full bg-tullet-yellow hover:bg-yellow-400 text-tullet-dark font-black text-2xl py-4 px-6 border-3 border-tullet-dark tullet-btn flex items-center justify-center gap-3">
+                <i class="fa-solid fa-play"></i> Entra nella Fabbrica dei Suoni!
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header class="bg-white border-b-4 border-tullet-dark px-4 py-3 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="flex -space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-tullet-blue border-2 border-tullet-dark flex items-center justify-center text-[10px] font-bold text-white">OH</div>
+                    <div class="w-8 h-8 rounded-full bg-tullet-red border-2 border-tullet-dark flex items-center justify-center text-[10px] font-bold text-white">AH</div>
+                    <div class="w-8 h-8 rounded-full bg-tullet-yellow border-2 border-tullet-dark flex items-center justify-center text-[9px] font-bold text-tullet-dark">UAU</div>
+                </div>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-tullet-dark">
+                        OH! AH! UAU! <span class="text-tullet-blue font-hand text-xl sm:text-2xl font-normal">La Fabbrica dei Ritmi</span>
+                    </h1>
+                    <p class="text-xs sm:text-sm font-medium text-gray-600">Ispirato all'albo illustrato di Hervé Tullet</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button id="btn-guide" class="bg-tullet-yellow hover:bg-yellow-400 text-tullet-dark font-bold px-3.5 py-2 text-xs sm:text-sm border-2 border-tullet-dark tullet-btn flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb"></i> <span class="hidden sm:inline">Guida Didattica</span>
+                </button>
+                <button id="btn-reset-all" class="bg-red-100 hover:bg-red-200 text-tullet-red font-bold px-3 py-2 text-xs sm:text-sm border-2 border-tullet-dark tullet-btn flex items-center gap-1">
+                    <i class="fa-solid fa-rotate-left"></i> Reset
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Notification Toast Box -->
+    <div id="toast-container" class="fixed top-20 right-4 z-40 flex flex-col gap-2 pointer-events-none"></div>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- SECTION 1: STUDIO DI REGISTRAZIONE VOCALE (3 Colori x 3 Dimensioni) -->
+        <section class="lg:col-span-5 flex flex-col gap-4">
+            <div class="bg-white p-4 md:p-5 border-4 border-tullet-dark tullet-card flex flex-col gap-4">
+                <div class="flex items-center justify-between border-b-2 border-gray-100 pb-3">
+                    <h2 class="text-xl font-black flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-full bg-tullet-blue text-white flex items-center justify-center text-xs font-bold">1</span>
+                        Studio Vocale dei 3 Colori
+                    </h2>
+                    <span class="text-xs bg-blue-50 text-tullet-blue font-bold px-2.5 py-1 rounded-full border border-blue-200">
+                        9 Suoni Personalizzabili
+                    </span>
+                </div>
+
+                <p class="text-xs sm:text-sm text-gray-600 font-medium">
+                    Registra la voce della classe per ogni pallino, oppure usa la nostra sintesi vocale automatica!
+                </p>
+
+                <!-- Color Selector Tabs for Voice Studio -->
+                <div class="flex border-2 border-tullet-dark rounded-xl p-1 bg-gray-50 gap-1">
+                    <button id="tab-blu" class="flex-1 py-2 px-2 rounded-lg font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all bg-tullet-blue text-white shadow-sm">
+                        <span class="w-3 h-3 rounded-full bg-white border border-tullet-dark"></span> BLU (OH!)
+                    </button>
+                    <button id="tab-rosso" class="flex-1 py-2 px-2 rounded-lg font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all text-gray-700 hover:bg-gray-200">
+                        <span class="w-3 h-3 rounded-full bg-tullet-red border border-tullet-dark"></span> ROSSO (AH!)
+                    </button>
+                    <button id="tab-giallo" class="flex-1 py-2 px-2 rounded-lg font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all text-gray-700 hover:bg-gray-200">
+                        <span class="w-3 h-3 rounded-full bg-tullet-yellow border border-tullet-dark"></span> GIALLO (UAU!)
+                    </button>
+                </div>
+
+                <!-- CARDS CONTAINER PER I 3 COLORI -->
+                <div id="studio-cards-container" class="space-y-3">
+                    <!-- Dynamic rendering of 3 size cards for active color tab -->
+                </div>
+
+                <!-- Classroom Tip Card -->
+                <div class="bg-yellow-50 border-2 border-tullet-dark p-3 rounded-xl flex items-start gap-2.5 text-xs text-yellow-900 mt-1">
+                    <i class="fa-solid fa-chalkboard-user text-tullet-yellow text-xl mt-0.5 shrink-0"></i>
+                    <div>
+                        <strong class="font-bold block text-sm">Idea Didattica:</strong>
+                        Fate cantare <strong>"OH!"</strong> per il Blu, <strong>"AH!"</strong> di sorpresa per il Rosso, e un allegro <strong>"UAU!"</strong> per il Giallo!
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2 & 3: SEQUENCER E CONTROLLI RITMICI (7 cols on lg) -->
+        <section class="lg:col-span-7 flex flex-col gap-4">
+            
+            <!-- Sequencer Main Box -->
+            <div class="bg-white p-4 md:p-5 border-4 border-tullet-dark tullet-card flex flex-col gap-4 flex-1">
+                
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b-2 border-gray-100 pb-3">
+                    <h2 class="text-xl font-black flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-full bg-tullet-yellow text-tullet-dark flex items-center justify-center text-xs font-bold border border-tullet-dark">2</span>
+                        Partitura Grafica
+                    </h2>
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-gray-500">
+                        <span id="dot-counter" class="bg-gray-100 border border-gray-300 px-2.5 py-1 rounded-full">0 Pallini</span>
+                    </div>
+                </div>
+
+                <!-- Palette of Elements to Add -->
+                <div class="space-y-2">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">Tavolozza Pallini (Tocca per aggiungere):</span>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <!-- BLU GROUP -->
+                        <div class="p-2 bg-blue-50/70 border-2 border-tullet-dark rounded-xl space-y-1.5">
+                            <span class="text-[11px] font-black text-tullet-blue block text-center">BLU ("OH!")</span>
+                            <div class="flex gap-1">
+                                <button onclick="addToSequence('blu', 'grande')" class="flex-1 py-1.5 bg-white hover:bg-blue-100 border border-tullet-dark rounded-lg flex items-center justify-center gap-1 font-bold text-xs text-tullet-blue tullet-btn">
+                                    <span class="w-4 h-4 rounded-full bg-tullet-blue border border-tullet-dark"></span> G
+                                </button>
+                                <button onclick="addToSequence('blu', 'medio')" class="flex-1 py-1.5 bg-white hover:bg-blue-100 border border-tullet-dark rounded-lg flex items-center justify-center gap-1 font-bold text-xs text-tullet-blue tullet-btn">
+                                    <span class="w-3 h-3 rounded-full bg-tullet-blue border border-tullet-dark"></span> M
+                                </button>
+                                <button onclick="addToSequence('blu', 'piccolo')" class="flex-1 py-1.5 bg-white hover:bg-blue-100 border border-tullet-dark rounded-lg flex items-center justify-center gap-1 font-bold text-xs text-tullet-blue tullet-btn">
+                                    <span class="w-2 h-2 rounded-full bg-tullet-blue border border-tullet-dark"></span> P
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- ROSSO GROUP -->
+                        <div class="p-2 bg-red-50/70 border-2 border-tullet-dark rounded-xl space-y-1.5">
+                            <span class="text-[11px] font-black text-tullet-red block text-center">ROSSO ("AH!")</span>
+                            <div class="flex gap-1">
+                                <button onclick="addToSequence('rosso', 'grande')" class="flex-1 py-1.5 bg-white hover:bg-red-100 border border-tullet-dark rounded-lg flex items-center justify-center gap-1 font-bold text-xs text-tullet-red tullet-btn">
+                                    <span class="w-4 h-4 rounded-full bg-tullet-red border border-tullet-dark"></span> G
+                                </button>
+                                <button onclick="addToSequence('rosso', 'medio')" class="flex-1 py-1.5 bg-white hover:bg-red-100 border border-tullet-dark rounded-lg flex items-center justify-center gap-1 font-bold text-xs text-tullet-red tullet-btn">
+                                    <span class="w-3 h-3 rounded-full bg-tullet-red border border-tullet-dark"></span> M
+                                </button>
+                                <button onclick="addToSequence('rosso', 'piccolo')" class="flex-1 py-1.5 bg-white hover:bg-red-100 border border-tullet-dark rounded-lg flex items-center justify-center gap-1 font-bold text-xs text-tullet-red tullet-btn">
+                                    <span class="w-2 h-2 rounded-full bg-tullet-red border border-tullet-dark"></span> P
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- GIALLO GROUP -->
+                        <div class="p-2 bg-yellow-50/70 border-2 border-tullet-dark rounded-xl space-y-1.5">
+                            <span class="text-[11px] font-black text-yellow-800 block text-center">GIALLO ("UAU!")</span>
+                            <div class="flex gap-1">
+                                <button onclick="addToSequence('giallo', 'grande')" class="flex-1 py-1.5 bg-white hover:bg-yellow-100 border border-tullet-dark rounded-lg flex items-center justify-center gap-1 font-bold text-xs text-yellow-800 tullet-btn">
+                                    <span class="w-4 h-4 rounded-full bg-tullet-yellow border border-tullet-dark"></span> G
+                                </button>
+                                <button onclick="addToSequence('giallo', 'medio')" class="flex-1 py-1.5 bg-white hover:bg-yellow-100 border border-tullet-dark rounded-lg flex items-center justify-center gap-1 font-bold text-xs text-yellow-800 tullet-btn">
+                                    <span class="w-3 h-3 rounded-full bg-tullet-yellow border border-tullet-dark"></span> M
+                                </button>
+                                <button onclick="addToSequence('giallo', 'piccolo')" class="flex-1 py-1.5 bg-white hover:bg-yellow-100 border border-tullet-dark rounded-lg flex items-center justify-center gap-1 font-bold text-xs text-yellow-800 tullet-btn">
+                                    <span class="w-2 h-2 rounded-full bg-tullet-yellow border border-tullet-dark"></span> P
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pausa Button -->
+                    <div class="pt-1">
+                        <button onclick="addToSequence('pausa', 'pausa')" class="w-full bg-gray-100 hover:bg-gray-200 border-2 border-tullet-dark py-2 rounded-xl flex items-center justify-center gap-2 font-bold text-xs text-gray-700 tullet-btn">
+                            <i class="fa-solid fa-pause"></i> + Aggiungi Pausa / Spazio Vuoto
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pre-made Preset Patterns -->
+                <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-gray-100">
+                    <span class="text-xs font-bold text-gray-500">Ritmi Pronti:</span>
+                    <button id="preset-alternanza" class="text-xs font-bold bg-yellow-100 hover:bg-yellow-200 text-yellow-900 border border-tullet-dark px-2.5 py-1 rounded-lg">
+                        I Tre Colori
+                    </button>
+                    <button id="preset-abc" class="text-xs font-bold bg-yellow-100 hover:bg-yellow-200 text-yellow-900 border border-tullet-dark px-2.5 py-1 rounded-lg">
+                        Ritmo A-B-C
+                    </button>
+                    <button id="preset-tutti" class="text-xs font-bold bg-yellow-100 hover:bg-yellow-200 text-yellow-900 border border-tullet-dark px-2.5 py-1 rounded-lg">
+                        Tutti Insieme!
+                    </button>
+                    <button id="btn-delete-last" class="text-xs font-bold bg-orange-50 hover:bg-orange-100 text-orange-800 border border-tullet-dark px-2 py-1 rounded-lg ml-auto">
+                        <i class="fa-solid fa-delete-left"></i> Annulla
+                    </button>
+                    <button id="btn-clear-track" class="text-xs font-bold bg-red-50 hover:bg-red-100 text-tullet-red border border-tullet-dark px-2 py-1 rounded-lg">
+                        <i class="fa-solid fa-trash-can"></i> Svuota
+                    </button>
+                </div>
+
+                <!-- Interactive Sequencer Track Canvas Container -->
+                <div class="relative bg-tullet-bg border-3 border-tullet-dark rounded-2xl p-4 min-h-[170px] flex items-center overflow-x-auto custom-scrollbar shadow-inner" id="track-container">
+                    
+                    <!-- Sequence Container (Horizontal list of dots) -->
+                    <div id="sequence-track" class="flex items-center gap-3.5 min-w-full py-2 px-2">
+                        <!-- Sequence items rendered via JS -->
+                    </div>
+
+                    <!-- Empty state placeholder -->
+                    <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-center p-4 text-gray-400 pointer-events-none">
+                        <i class="fa-solid fa-music text-3xl mb-1 text-gray-300"></i>
+                        <p class="font-hand text-base text-gray-500">La partitura è vuota!</p>
+                        <p class="text-xs">Tocca un pallino in alto per iniziare la tua composizione.</p>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: CONTROLLI DI RIPRODUZIONE -->
+                <div class="bg-gray-50 p-4 border-3 border-tullet-dark rounded-2xl flex flex-col gap-4 mt-auto">
+                    
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        
+                        <!-- Play/Stop Big Button -->
+                        <button id="btn-play-sequence" class="bg-tullet-yellow hover:bg-yellow-400 text-tullet-dark font-black text-lg sm:text-xl py-3 px-6 sm:px-8 border-3 border-tullet-dark tullet-btn flex items-center gap-3 shadow-md">
+                            <i id="play-icon" class="fa-solid fa-play text-xl sm:text-2xl"></i>
+                            <span id="play-text">RIPRODUCI SEQUENZA</span>
+                        </button>
+
+                        <!-- Loop Mode Toggle -->
+                        <button id="btn-loop-toggle" class="bg-white hover:bg-gray-100 text-tullet-dark font-bold text-xs sm:text-sm py-3 px-4 border-2 border-tullet-dark rounded-xl flex items-center gap-2 tullet-btn">
+                            <i id="loop-icon" class="fa-solid fa-repeat text-gray-400"></i>
+                            <span>Loop: <strong id="loop-status" class="text-gray-500">OFF</strong></span>
+                        </button>
+                    </div>
+
+                    <!-- Speed / Tempo Slider -->
+                    <div class="flex items-center gap-3 bg-white p-3 border-2 border-tullet-dark rounded-xl">
+                        <div class="flex items-center gap-1.5 font-bold text-xs sm:text-sm w-28 shrink-0">
+                            <i class="fa-solid fa-gauge-high text-tullet-blue"></i>
+                            <span>Velocità:</span>
+                        </div>
+                        <span class="text-xs font-bold text-gray-500">Lento</span>
+                        <input id="tempo-slider" type="range" min="40" max="180" value="90" class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-tullet-blue">
+                        <span class="text-xs font-bold text-gray-500">Veloce</span>
+                        <span id="bpm-display" class="bg-blue-100 text-tullet-blue font-bold text-xs px-2 py-1 rounded border border-blue-300 min-w-[50px] text-center">
+                            90 BPM
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Guide -->
+    <div id="modal-guide" class="fixed inset-0 z-50 bg-tullet-dark/70 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white p-6 md:p-8 max-w-lg w-full border-4 border-tullet-dark tullet-card max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b-2 border-gray-100 pb-3 mb-4">
+                <h3 class="text-2xl font-black flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-tullet-blue"></i> Guida Didattica
+                </h3>
+                <button id="btn-close-guide" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-tullet-dark font-bold border border-tullet-dark flex items-center justify-center">
+                    ✕
+                </button>
+            </div>
+
+            <div class="space-y-4 text-sm text-gray-700 font-medium">
+                <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                    <strong class="text-tullet-blue block font-bold text-base mb-1">1. Registra le voci dei tre colori</strong>
+                    Seleziona le schede BLU, ROSSO e GIALLO nel primo riquadro per registrare la voce dei bambini per ciascuna dimensione. Se non registri, l'app userà la voce sintetica!
+                </div>
+
+                <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+                    <strong class="text-yellow-800 block font-bold text-base mb-1">2. Componi il tuo ritmo visivo</strong>
+                    Aggiungi pallini e pause nella partitura. Sperimenta alternanze come <i>Blu Grande - Rosso Medio - Giallo Piccolo</i> per stimolare la lettura simbolica del ritmo.
+                </div>
+
+                <div class="p-3 bg-red-50 border border-red-200 rounded-xl">
+                    <strong class="text-tullet-red block font-bold text-base mb-1">3. Esegui e segui la sequenza</strong>
+                    Premi RIPRODUCI SEQUENZA: ogni pallino si illuminerà con un bagliore speciale per l'esatta durata del suono, permettendo ai bambini di seguirlo visivamente a tempo.
+                </div>
+            </div>
+
+            <button id="btn-understood" class="w-full mt-6 bg-tullet-yellow hover:bg-yellow-400 text-tullet-dark font-black text-lg py-3 px-4 border-2 border-tullet-dark tullet-btn">
+                Inizia il Laboratorio!
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Web Audio Context & Buffers Storage (3 Colors x 3 Sizes = 9 entries)
+        let audioCtx = null;
+        let recordedBuffers = {
+            'blu_grande': null, 'blu_medio': null, 'blu_piccolo': null,
+            'rosso_grande': null, 'rosso_medio': null, 'rosso_piccolo': null,
+            'giallo_grande': null, 'giallo_medio': null, 'giallo_piccolo': null
+        };
+        
+        let activeMediaRecorder = null;
+        let activeRecordingKey = null; // e.g. 'blu_grande'
+        let activeStudioColor = 'blu'; // 'blu', 'rosso', or 'giallo'
+
+        // Sequence State
+        let sequence = []; // Array of objects: { id, color: 'blu'|'rosso'|'giallo'|'pausa', size: 'grande'|'medio'|'piccolo'|'pausa' }
+        let isPlaying = false;
+        let isLooping = false;
+        let currentStepIndex = 0;
+        let playbackTimer = null;
+        let tempoBpm = 90;
+
+        // Color definitions metadata
+        const COLOR_META = {
+            blu: { name: 'BLU', sound: 'OH!', hex: '#0055ff', bgClass: 'bg-tullet-blue', textClass: 'text-tullet-blue' },
+            rosso: { name: 'ROSSO', sound: 'AH!', hex: '#ff2a2a', bgClass: 'bg-tullet-red', textClass: 'text-tullet-red' },
+            giallo: { name: 'GIALLO', sound: 'UAU!', hex: '#ffcc00', bgClass: 'bg-tullet-yellow', textClass: 'text-yellow-800' }
+        };
+
+        const SIZE_META = {
+            grande: { name: 'Grande', text: 'Suono Forte & Profondo', scale: 'w-14 h-14', font: 'text-lg font-black' },
+            medio: { name: 'Medio', text: 'Suono Normale', scale: 'w-10 h-10', font: 'text-sm font-bold' },
+            piccolo: { name: 'Piccolo', text: 'Suono Piano & Acuto', scale: 'w-7 h-7', font: 'text-[10px] font-bold' }
+        };
+
+        // DOM elements
+        const unlockOverlay = document.getElementById('audio-unlock-overlay');
+        const btnUnlockAudio = document.getElementById('btn-unlock-audio');
+        const studioCardsContainer = document.getElementById('studio-cards-container');
+        const sequenceTrack = document.getElementById('sequence-track');
+        const emptyState = document.getElementById('empty-state');
+        const dotCounter = document.getElementById('dot-counter');
+        const btnPlaySequence = document.getElementById('btn-play-sequence');
+        const playIcon = document.getElementById('play-icon');
+        const playText = document.getElementById('play-text');
+        const btnLoopToggle = document.getElementById('btn-loop-toggle');
+        const loopIcon = document.getElementById('loop-icon');
+        const loopStatus = document.getElementById('loop-status');
+        const tempoSlider = document.getElementById('tempo-slider');
+        const bpmDisplay = document.getElementById('bpm-display');
+
+        // Modal Guide
+        const modalGuide = document.getElementById('modal-guide');
+        const btnGuide = document.getElementById('btn-guide');
+        const btnCloseGuide = document.getElementById('btn-close-guide');
+        const btnUnderstood = document.getElementById('btn-understood');
+        const btnResetAll = document.getElementById('btn-reset-all');
+
+        // Toast Helper
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-2.5 rounded-xl border-2 border-tullet-dark font-bold text-xs sm:text-sm shadow-lg transition-all duration-300 transform translate-x-10 opacity-0 flex items-center gap-2 pointer-events-auto bg-white`;
+            
+            let icon = '<i class="fa-solid fa-circle-info text-tullet-blue"></i>';
+            if (type === 'success') icon = '<i class="fa-solid fa-circle-check text-green-500"></i>';
+            if (type === 'warning') icon = '<i class="fa-solid fa-triangle-exclamation text-tullet-yellow"></i>';
+            if (type === 'recording') icon = '<i class="fa-solid fa-microphone text-tullet-red animate-pulse"></i>';
+
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => toast.classList.remove('translate-x-10', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-x-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize AudioContext
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContextClass();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        btnUnlockAudio.addEventListener('click', () => {
+            initAudioContext();
+            unlockOverlay.classList.add('hidden');
+            showToast('Audio Attivato! Inizia a creare i tuoi ritmi.', 'success');
+        });
+
+        /**
+         * Web Audio Synthesizer for default sound generation
+         * Color: blu="OH!", rosso="AH!", giallo="UAU!"
+         * Size: grande (deep, loud), medio (normal), piccolo (high, soft)
+         */
+        function playSynthVocal(color, size) {
+            if (!audioCtx) initAudioContext();
+
+            const now = audioCtx.currentTime;
+
+            // Pitch multipliers
+            let pitchBase = 150; // C3
+            let gainVal = 0.7;
+            let duration = 0.35;
+
+            if (size === 'grande') {
+                pitchBase = 110;
+                gainVal = 0.85;
+                duration = 0.45;
+            } else if (size === 'medio') {
+                pitchBase = 220;
+                gainVal = 0.65;
+                duration = 0.3;
+            } else if (size === 'piccolo') {
+                pitchBase = 440;
+                gainVal = 0.4;
+                duration = 0.2;
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            if (color === 'blu') {
+                // "OH!" sound: Sawtooth with dropping pitch and dual formant filters
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(pitchBase, now);
+                osc.frequency.exponentialRampToValueAtTime(pitchBase * 0.75, now + duration);
+
+                const f1 = audioCtx.createBiquadFilter();
+                f1.type = 'bandpass'; f1.frequency.value = 500; f1.Q.value = 3.0;
+
+                const f2 = audioCtx.createBiquadFilter();
+                f2.type = 'bandpass'; f2.frequency.value = 900; f2.Q.value = 3.0;
+
+                osc.connect(f1); osc.connect(f2);
+                f1.connect(gainNode); f2.connect(gainNode);
+
+            } else if (color === 'rosso') {
+                // "AH!" sound: Brighter open vowel formants (~850Hz & ~1300Hz)
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(pitchBase * 1.1, now);
+                osc.frequency.linearRampToValueAtTime(pitchBase * 1.05, now + duration);
+
+                const f1 = audioCtx.createBiquadFilter();
+                f1.type = 'bandpass'; f1.frequency.value = 850; f1.Q.value = 2.5;
+
+                const f2 = audioCtx.createBiquadFilter();
+                f2.type = 'bandpass'; f2.frequency.value = 1300; f2.Q.value = 2.5;
+
+                osc.connect(f1); osc.connect(f2);
+                f1.connect(gainNode); f2.connect(gainNode);
+
+            } else if (color === 'giallo') {
+                // "UAU!" sound: Pitch bend (glissando up then slightly down)
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(pitchBase * 0.7, now);
+                osc.frequency.exponentialRampToValueAtTime(pitchBase * 1.6, now + (duration * 0.6));
+                osc.frequency.exponentialRampToValueAtTime(pitchBase * 1.2, now + duration);
+
+                const f1 = audioCtx.createBiquadFilter();
+                f1.type = 'lowpass'; f1.frequency.value = 2200;
+
+                osc.connect(f1);
+                f1.connect(gainNode);
+            }
+
+            // Envelope
+            gainNode.gain.setValueAtTime(0.001, now);
+            gainNode.gain.linearRampToValueAtTime(gainVal, now + 0.03);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            gainNode.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + duration + 0.05);
+        }
+
+        // Play Sound Entry
+        function playSound(color, size) {
+            if (color === 'pausa' || size === 'pausa') return;
+
+            initAudioContext();
+            const key = `${color}_${size}`;
+
+            if (recordedBuffers[key]) {
+                try {
+                    const source = audioCtx.createBufferSource();
+                    source.buffer = recordedBuffers[key];
+                    source.connect(audioCtx.destination);
+                    source.start(0);
+                } catch (e) {
+                    console.error("Playback error:", e);
+                    playSynthVocal(color, size);
+                }
+            } else {
+                playSynthVocal(color, size);
+            }
+        }
+
+        // Audio Recorder
+        async function startRecording(color, size) {
+            initAudioContext();
+            const key = `${color}_${size}`;
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showToast("Il browser non supporta la registrazione vocale. Usiamo la voce sintetica!", "warning");
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const chunks = [];
+                activeMediaRecorder = new MediaRecorder(stream);
+                activeRecordingKey = key;
+
+                const recBtn = document.getElementById(`btn-rec-${key}`);
+                if (recBtn) {
+                    recBtn.classList.add('recording-active', 'bg-red-700');
+                    recBtn.innerHTML = '<i class="fa-solid fa-square"></i>';
+                }
+                showToast(`Registrazione ${COLOR_META[color].name} ${size.toUpperCase()} in corso...`, 'recording');
+
+                activeMediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) chunks.push(e.data);
+                };
+
+                activeMediaRecorder.onstop = async () => {
+                    stream.getTracks().forEach(track => track.stop());
+                    const blob = new Blob(chunks, { type: 'audio/webm' });
+                    const arrayBuffer = await blob.arrayBuffer();
+
+                    audioCtx.decodeAudioData(arrayBuffer, (decodedBuffer) => {
+                        recordedBuffers[key] = decodedBuffer;
+                        renderVoiceStudioCards();
+                        showToast(`Voce salvata per ${COLOR_META[color].name} ${size.toUpperCase()}!`, 'success');
+                    }, (err) => {
+                        console.error("Audio decode error:", err);
+                        showToast("Errore durante l'elaborazione dell'audio.", "warning");
+                    });
+
+                    if (recBtn) {
+                        recBtn.classList.remove('recording-active', 'bg-red-700');
+                        recBtn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+                    }
+                    activeMediaRecorder = null;
+                    activeRecordingKey = null;
+                };
+
+                activeMediaRecorder.start();
+
+                setTimeout(() => {
+                    if (activeMediaRecorder && activeMediaRecorder.state === 'recording') {
+                        activeMediaRecorder.stop();
+                    }
+                }, 3000);
+
+            } catch (err) {
+                console.error("Microphone access error:", err);
+                showToast("Permesso microfono non concesso. Uso la voce sintetica.", "warning");
+            }
+        }
+
+        // Render Cards for active Studio Color Tab
+        function renderVoiceStudioCards() {
+            studioCardsContainer.innerHTML = '';
+            const meta = COLOR_META[activeStudioColor];
+
+            ['grande', 'medio', 'piccolo'].forEach(size => {
+                const sizeMeta = SIZE_META[size];
+                const key = `${activeStudioColor}_${size}`;
+                const hasRecording = !!recordedBuffers[key];
+
+                const card = document.createElement('div');
+                card.className = "bg-gray-50 p-3 border-2 border-tullet-dark rounded-2xl flex items-center justify-between gap-3 relative";
+
+                const isYellow = activeStudioColor === 'giallo';
+                const textCol = isYellow ? 'text-tullet-dark' : 'text-white';
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="${sizeMeta.scale} rounded-full ${meta.bgClass} border-2 border-tullet-dark flex items-center justify-center ${textCol} ${sizeMeta.font} shadow-sm shrink-0 dot-organic">
+                            ${meta.sound.replace('!', '')}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm leading-tight">${sizeMeta.name}</h3>
+                            <p class="text-[11px] text-gray-500 font-medium">${sizeMeta.text}</p>
+                            <span class="inline-block mt-0.5 text-[10px] font-bold px-2 py-0.5 rounded ${hasRecording ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-gray-200 text-gray-700'}">
+                                ${hasRecording ? 'Voce Registrata!' : 'Voce Sintetica'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button id="btn-play-${key}" title="Ascolta Suono" class="w-9 h-9 bg-white hover:bg-gray-100 text-tullet-dark rounded-xl border border-tullet-dark flex items-center justify-center text-sm tullet-btn">
+                            <i class="fa-solid fa-volume-high ${meta.textClass}"></i>
+                        </button>
+                        <button id="btn-rec-${key}" title="Registra Voce" class="w-9 h-9 bg-tullet-red hover:bg-red-600 text-white rounded-xl border border-tullet-dark flex items-center justify-center text-sm tullet-btn">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
+                    </div>
+                `;
+
+                studioCardsContainer.appendChild(card);
+
+                // Add listeners
+                document.getElementById(`btn-play-${key}`).addEventListener('click', () => {
+                    playSound(activeStudioColor, size);
+                    const dot = card.querySelector('.dot-organic');
+                    dot.classList.add('dot-playing');
+                    setTimeout(() => dot.classList.remove('dot-playing'), 300);
+                });
+
+                document.getElementById(`btn-rec-${key}`).addEventListener('click', () => {
+                    if (activeMediaRecorder && activeMediaRecorder.state === 'recording') {
+                        if (activeRecordingKey === key) activeMediaRecorder.stop();
+                    } else {
+                        startRecording(activeStudioColor, size);
+                    }
+                });
+            });
+        }
+
+        // Studio Color Tab Switchers
+        ['blu', 'rosso', 'giallo'].forEach(col => {
+            document.getElementById(`tab-${col}`).addEventListener('click', () => {
+                activeStudioColor = col;
+                ['blu', 'rosso', 'giallo'].forEach(c => {
+                    const btn = document.getElementById(`tab-${c}`);
+                    if (c === col) {
+                        btn.className = `flex-1 py-2 px-2 rounded-lg font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all ${COLOR_META[c].bgClass} ${c === 'giallo' ? 'text-tullet-dark' : 'text-white'} shadow-sm`;
+                    } else {
+                        btn.className = `flex-1 py-2 px-2 rounded-lg font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all text-gray-700 hover:bg-gray-200`;
+                    }
+                });
+                renderVoiceStudioCards();
+            });
+        });
+
+        function generateId() {
+            return 'dot_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function addToSequence(color, size) {
+            sequence.push({ id: generateId(), color, size });
+            renderSequenceTrack();
+            if (color !== 'pausa') {
+                playSound(color, size);
+            }
+        }
+
+        function removeLastFromSequence() {
+            if (sequence.length > 0) {
+                sequence.pop();
+                renderSequenceTrack();
+            }
+        }
+
+        function clearSequence() {
+            sequence = [];
+            stopSequencePlayback();
+            renderSequenceTrack();
+            showToast("Partitura svuotata", "info");
+        }
+
+        function renderSequenceTrack() {
+            sequenceTrack.innerHTML = '';
+
+            if (sequence.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            dotCounter.innerText = `${sequence.length} Elementi`;
+
+            sequence.forEach((item, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.id = `seq-item-${index}`;
+                wrapper.className = `relative group flex flex-col items-center justify-center p-2 rounded-2xl bg-white border-2 border-tullet-dark shadow-sm shrink-0 transition-transform duration-200 cursor-pointer hover:scale-105 min-w-[65px] min-h-[85px]`;
+
+                // Remove Button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = `absolute -top-2 -right-2 w-5 h-5 rounded-full bg-tullet-red text-white text-[10px] border border-tullet-dark flex items-center justify-center shadow-sm opacity-80 group-hover:opacity-100`;
+                deleteBtn.innerHTML = '✕';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    sequence.splice(index, 1);
+                    renderSequenceTrack();
+                };
+                wrapper.appendChild(deleteBtn);
+
+                // Index Badge
+                const idxBadge = document.createElement('span');
+                idxBadge.className = 'text-[9px] font-bold text-gray-400 mb-1';
+                idxBadge.innerText = `#${index + 1}`;
+                wrapper.appendChild(idxBadge);
+
+                if (item.color === 'pausa') {
+                    const pauseBox = document.createElement('div');
+                    pauseBox.className = 'w-7 h-7 rounded-full border-2 border-dashed border-gray-400 flex items-center justify-center text-gray-400 text-xs font-bold';
+                    pauseBox.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                    wrapper.appendChild(pauseBox);
+                } else {
+                    const meta = COLOR_META[item.color];
+                    const sizeMeta = SIZE_META[item.size];
+                    const isYellow = item.color === 'giallo';
+                    const textCol = isYellow ? 'text-tullet-dark' : 'text-white';
+
+                    const dot = document.createElement('div');
+                    dot.className = `${sizeMeta.scale} rounded-full ${meta.bgClass} border-2 border-tullet-dark flex items-center justify-center ${textCol} ${sizeMeta.font} dot-organic shadow-sm`;
+                    dot.innerText = meta.sound.replace('!', '');
+                    wrapper.appendChild(dot);
+                }
+
+                wrapper.onclick = () => {
+                    if (item.color !== 'pausa') playSound(item.color, item.size);
+                    wrapper.classList.add('scale-110');
+                    setTimeout(() => wrapper.classList.remove('scale-110'), 200);
+                };
+
+                sequenceTrack.appendChild(wrapper);
+            });
+        }
+
+        function startSequencePlayback() {
+            if (sequence.length === 0) {
+                showToast("Aggiungi prima dei pallini alla partitura!", "warning");
+                return;
+            }
+
+            initAudioContext();
+            isPlaying = true;
+            currentStepIndex = 0;
+
+            btnPlaySequence.className = "bg-tullet-red hover:bg-red-600 text-white font-black text-lg sm:text-xl py-3 px-6 sm:px-8 border-3 border-tullet-dark tullet-btn flex items-center gap-3 shadow-md";
+            playIcon.className = "fa-solid fa-square text-xl sm:text-2xl";
+            playText.innerText = "FERMA";
+
+            executePlaybackStep();
+        }
+
+        function stopSequencePlayback() {
+            isPlaying = false;
+            if (playbackTimer) clearTimeout(playbackTimer);
+
+            const allSteps = sequenceTrack.querySelectorAll('[id^="seq-item-"]');
+            allSteps.forEach(step => {
+                step.classList.remove('step-active-glowing');
+                const dot = step.querySelector('.dot-organic');
+                if (dot) dot.classList.remove('dot-playing');
+            });
+
+            btnPlaySequence.className = "bg-tullet-yellow hover:bg-yellow-400 text-tullet-dark font-black text-lg sm:text-xl py-3 px-6 sm:px-8 border-3 border-tullet-dark tullet-btn flex items-center gap-3 shadow-md";
+            playIcon.className = "fa-solid fa-play text-xl sm:text-2xl";
+            playText.innerText = "RIPRODUCI SEQUENZA";
+        }
+
+        function executePlaybackStep() {
+            if (!isPlaying) return;
+
+            if (currentStepIndex >= sequence.length) {
+                if (isLooping) {
+                    currentStepIndex = 0;
+                } else {
+                    stopSequencePlayback();
+                    return;
+                }
+            }
+
+            // Remove highlight from all steps
+            const allSteps = sequenceTrack.querySelectorAll('[id^="seq-item-"]');
+            allSteps.forEach(step => {
+                step.classList.remove('step-active-glowing');
+                const dot = step.querySelector('.dot-organic');
+                if (dot) dot.classList.remove('dot-playing');
+            });
+
+            // Highlight ONLY the active step with step-active-glowing
+            const currentItem = sequence[currentStepIndex];
+            const currentElement = document.getElementById(`seq-item-${currentStepIndex}`);
+
+            if (currentElement) {
+                currentElement.classList.add('step-active-glowing');
+                const dot = currentElement.querySelector('.dot-organic');
+                if (dot) dot.classList.add('dot-playing');
+
+                currentElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+
+            // Play Sound for active item
+            if (currentItem.color !== 'pausa') {
+                playSound(currentItem.color, currentItem.size);
+            }
+
+            const stepIntervalMs = (60 / tempoBpm) * 1000;
+            currentStepIndex++;
+            playbackTimer = setTimeout(executePlaybackStep, stepIntervalMs);
+        }
+
+        // Global Action Buttons
+        btnPlaySequence.addEventListener('click', () => {
+            if (isPlaying) stopSequencePlayback();
+            else startSequencePlayback();
+        });
+
+        btnLoopToggle.addEventListener('click', () => {
+            isLooping = !isLooping;
+            if (isLooping) {
+                loopIcon.className = "fa-solid fa-repeat text-tullet-blue";
+                loopStatus.innerText = "ON";
+                loopStatus.className = "text-tullet-blue font-black";
+                showToast("Modalità Loop Attivata", "info");
+            } else {
+                loopIcon.className = "fa-solid fa-repeat text-gray-400";
+                loopStatus.innerText = "OFF";
+                loopStatus.className = "text-gray-500 font-bold";
+            }
+        });
+
+        tempoSlider.addEventListener('input', (e) => {
+            tempoBpm = parseInt(e.target.value);
+            bpmDisplay.innerText = `${tempoBpm} BPM`;
+        });
+
+        document.getElementById('btn-delete-last').addEventListener('click', removeLastFromSequence);
+        document.getElementById('btn-clear-track').addEventListener('click', clearSequence);
+
+        // Presets
+        document.getElementById('preset-alternanza').addEventListener('click', () => {
+            sequence = [
+                { id: generateId(), color: 'blu', size: 'grande' },
+                { id: generateId(), color: 'rosso', size: 'grande' },
+                { id: generateId(), color: 'giallo', size: 'grande' },
+                { id: generateId(), color: 'pausa', size: 'pausa' },
+                { id: generateId(), color: 'blu', size: 'grande' },
+                { id: generateId(), color: 'rosso', size: 'grande' },
+                { id: generateId(), color: 'giallo', size: 'grande' }
+            ];
+            renderSequenceTrack();
+            showToast("Ritmo dei Tre Colori caricato!", "success");
+        });
+
+        document.getElementById('preset-abc').addEventListener('click', () => {
+            sequence = [
+                { id: generateId(), color: 'blu', size: 'grande' },
+                { id: generateId(), color: 'rosso', size: 'medio' },
+                { id: generateId(), color: 'giallo', size: 'piccolo' },
+                { id: generateId(), color: 'pausa', size: 'pausa' },
+                { id: generateId(), color: 'blu', size: 'grande' },
+                { id: generateId(), color: 'rosso', size: 'medio' },
+                { id: generateId(), color: 'giallo', size: 'piccolo' }
+            ];
+            renderSequenceTrack();
+            showToast("Ritmo A-B-C caricato!", "success");
+        });
+
+        document.getElementById('preset-tutti').addEventListener('click', () => {
+            sequence = [
+                { id: generateId(), color: 'blu', size: 'grande' },
+                { id: generateId(), color: 'rosso', size: 'grande' },
+                { id: generateId(), color: 'giallo', size: 'grande' },
+                { id: generateId(), color: 'blu', size: 'medio' },
+                { id: generateId(), color: 'rosso', size: 'medio' },
+                { id: generateId(), color: 'giallo', size: 'medio' },
+                { id: generateId(), color: 'blu', size: 'piccolo' },
+                { id: generateId(), color: 'rosso', size: 'piccolo' },
+                { id: generateId(), color: 'giallo', size: 'piccolo' }
+            ];
+            renderSequenceTrack();
+            showToast("Ritmo Tutti Insieme caricato!", "success");
+        });
+
+        // Guide Modal Events
+        btnGuide.addEventListener('click', () => modalGuide.classList.remove('hidden') || modalGuide.classList.add('flex'));
+        btnCloseGuide.addEventListener('click', () => modalGuide.classList.add('hidden'));
+        btnUnderstood.addEventListener('click', () => modalGuide.classList.add('hidden'));
+
+        // Reset
+        btnResetAll.addEventListener('click', () => {
+            recordedBuffers = {
+                'blu_grande': null, 'blu_medio': null, 'blu_piccolo': null,
+                'rosso_grande': null, 'rosso_medio': null, 'rosso_piccolo': null,
+                'giallo_grande': null, 'giallo_medio': null, 'giallo_piccolo': null
+            };
+            renderVoiceStudioCards();
+            clearSequence();
+            showToast("App ripristinata allo stato iniziale.", "info");
+        });
+
+        // Initial Setup on load
+        window.addEventListener('load', () => {
+            renderVoiceStudioCards();
+            document.getElementById('preset-alternanza').click();
+        });
+    </script>
+</body>
+</html>
